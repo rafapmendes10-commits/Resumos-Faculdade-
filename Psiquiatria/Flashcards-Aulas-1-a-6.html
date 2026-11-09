@@ -1,0 +1,478 @@
+<title>Flashcards de Psiquiatria</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: uma coluna central de estudo; barra de filtros no topo, cartão grande ao centro, controles de resposta abaixo */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#1b2230; --muted:#5d6676; --line:#d9dde4;
+  --accent:#2f4fa8; --accent-soft:#e6ebf8; --ok:#1f7a4d; --ok-soft:#e3f2ea; --bad:#b0362f; --bad-soft:#f8e5e3;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161d; --surface:#1b212b; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2c3441;
+  --accent:#8ea7ec; --accent-soft:#232d45; --ok:#6fcf9b; --ok-soft:#183126; --bad:#f08a80; --bad-soft:#3a1f1d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161d; --surface:#1b212b; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2c3441;
+  --accent:#8ea7ec; --accent-soft:#232d45; --ok:#6fcf9b; --ok-soft:#183126; --bad:#f08a80; --bad-soft:#3a1f1d; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:4px}
+h1{font-family:var(--display);font-weight:650;font-size:clamp(1.6rem,4vw,2.1rem);margin:0;text-wrap:balance;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0;font-size:.95rem}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.chip:focus-visible,.btn:focus-visible,.card:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.spacer{flex:1}
+.btn{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 14px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.stats{display:flex;gap:16px;flex-wrap:wrap;font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.stats b{color:var(--ink)}
+.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.progress span{display:block;height:100%;background:var(--ok);width:0;transition:width .25s}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px 24px 22px;min-height:290px;display:flex;flex-direction:column;gap:14px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.meta{display:flex;gap:8px;flex-wrap:wrap;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.meta .tag{background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:4px;font-weight:700}
+.q{font-family:var(--display);font-weight:500;font-size:clamp(1.2rem,3vw,1.45rem);line-height:1.35;margin:0;text-wrap:pretty}
+.a{border-top:1px dashed var(--line);padding-top:14px;font-size:1.02rem;white-space:pre-line;min-width:0}
+.hint{margin-top:auto;color:var(--muted);font-size:.85rem}
+.answer-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big{font:inherit;font-weight:700;font-size:1rem;padding:14px;border-radius:10px;border:1px solid var(--line);cursor:pointer;background:var(--surface);color:var(--ink)}
+.big.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.big.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.big:disabled{opacity:.45;cursor:default}
+.done{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px 24px;display:flex;flex-direction:column;gap:12px}
+.done h2{font-family:var(--display);margin:0;font-size:1.4rem}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.item .q{font-size:1.05rem}
+.item .a{padding-top:8px;font-size:.95rem}
+.keys{color:var(--muted);font-size:.8rem}
+.toast{color:var(--ok);font-size:.9rem}
+@media (prefers-reduced-motion:reduce){.progress span{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Flashcards de Psiquiatria</h1>
+    <p class="sub">Aulas 1 a 6 da masterclass. Leia a pergunta, responda em voz alta, toque no cartão para ver a resposta e diga se acertou. Os cartões que você errar voltam para a fila.</p>
+  </header>
+
+  <div class="bar" id="filters" role="group" aria-label="Filtrar por aula"></div>
+
+  <div class="bar">
+    <button class="chip" id="modeStudy" aria-pressed="true">Modo estudo</button>
+    <button class="chip" id="modeList" aria-pressed="false">Ver todos em lista</button>
+    <span class="spacer"></span>
+    <button class="btn" id="shuffle">Embaralhar</button>
+    <button class="btn" id="restart">Recomeçar</button>
+    <button class="btn" id="copy">Copiar para o Anki</button>
+  </div>
+  <div class="toast" id="toast" hidden></div>
+
+  <section id="study">
+    <div class="stats" aria-live="polite">
+      <span>Na fila: <b id="sLeft">0</b></span>
+      <span>Acertos: <b id="sOk">0</b></span>
+      <span>Erros: <b id="sBad">0</b></span>
+      <span>Dominados: <b id="sDone">0</b> de <b id="sTotal">0</b></span>
+    </div>
+    <div class="progress" style="margin-top:8px"><span id="pbar"></span></div>
+    <div style="height:14px"></div>
+    <div class="card" id="card" tabindex="0" role="button" aria-label="Virar cartão">
+      <div class="meta"><span class="tag" id="cAula"></span><span id="cTema"></span></div>
+      <p class="q" id="cQ"></p>
+      <div class="a" id="cA" hidden></div>
+      <div class="hint" id="cHint">Toque no cartão ou aperte a barra de espaço para ver a resposta</div>
+    </div>
+    <div style="height:12px"></div>
+    <div class="answer-row">
+      <button class="big bad" id="bBad" disabled>Errei (1)</button>
+      <button class="big ok" id="bOk" disabled>Acertei (2)</button>
+    </div>
+    <p class="keys">Atalhos: espaço vira o cartão, 1 marca erro, 2 marca acerto.</p>
+    <div class="done" id="done" hidden>
+      <h2>Rodada concluída</h2>
+      <p id="doneText"></p>
+      <div class="bar"><button class="btn" id="redoErr">Revisar só os que errei</button><button class="btn" id="redoAll">Fazer tudo de novo</button></div>
+    </div>
+  </section>
+
+  <section id="listView" hidden>
+    <div class="list" id="list"></div>
+  </section>
+</div>
+
+<script>
+const C = [
+// ===== AULAS 1 E 2 =====
+["1","Anamnese","Qual é o roteiro da anamnese psiquiátrica?","Identificação, QP (queixa principal) e HMA (história da moléstia atual), antecedentes psiquiátricos, história pessoal, história familiar e genética, história social e EEM (exame do estado mental).\nMnemônico: «I Quero Ajudar Pessoas Felizes Sempre Mentalmente»."],
+["1","Anamnese","O que investigar nos antecedentes psiquiátricos?","Tratamentos prévios (medicamento, dose, tempo de uso, efetividade, efeitos colaterais), internações psiquiátricas e risco de vida, sobretudo tentativas de autoextermínio."],
+["1","Anamnese","Quando o acompanhante é indispensável na consulta?","Em crianças e idosos com déficit cognitivo. Nos demais casos, respeitar a vontade do paciente e observar sua expressão enquanto o acompanhante fala."],
+["1","Anamnese","Se não é a primeira consulta psiquiátrica, como se constrói a HMA?","A partir da primeira vez em que procurou ajuda: motivos, cronologia dos sintomas e estado atual. A queixa real pode surgir só ao longo da conversa."],
+["1","EEM","Qual a ordem das funções avaliadas no EEM?","Atitude, consciência (e orientação), atenção, memória, inteligência, linguagem, humor, afeto, pensamento, juízo, sensopercepção, vontade e psicomotricidade."],
+["1","Consciência","Defina consciência.","Função psíquica que permite perceber a si mesmo e ao ambiente, mantendo capacidade de resposta aos estímulos."],
+["1","Consciência","Qual a diferença entre estar alerta e estar lúcido?","Alerta: acordado e responde aos estímulos (nível de consciência).\nLúcido: pensa de forma clara, coerente e organizada.\nO paciente pode estar alerta e não lúcido."],
+["1","Consciência","Dê um exemplo de paciente alerta, mas não lúcido.","Paciente em delirium ou em surto psicótico: acordado, conversa e responde, mas diz «sei que vocês querem me matar, há câmeras na parede»."],
+["1","Consciência","Nível de consciência e campo de consciência são a mesma coisa?","Não. Nível = grau de vigília (alerta, sonolento, torporoso, coma). Campo = amplitude do conteúdo psíquico acessível no momento («quanto da mente funciona ao mesmo tempo»): normal, estreitado ou fragmentado."],
+["1","Consciência","Dê um exemplo de estreitamento simples do campo de consciência.","Crise de pânico: o paciente só consegue focar na sensação de que vai morrer ou infartar e não presta atenção ao que o médico diz."],
+["1","Consciência","O que é estado crepuscular?","Estreitamento patológico e transitório do campo: a pessoa está acordada e age de forma aparentemente organizada, com automatismos, mas sem crítica nem integração consciente, e depois tem amnésia lacunar do período."],
+["1","Consciência","Cite causas de estado crepuscular.","Zolpidem (levanta, come, manda mensagens, dirige e não lembra), blackout alcoólico, intoxicações, epilepsia e TCE (traumatismo cranioencefálico)."],
+["1","Consciência","O que é dissociação no campo de consciência? Exemplos.","Fragmentação do campo: desconexão entre memória, identidade, percepção e emoção, como defesa inconsciente contra sofrimento intenso.\nExemplos: «via tudo de fora do meu corpo» num acidente, amnésia traumática, hipnose."],
+["1","Consciência","Que tipo de estado é a hipnose?","Estado lúcido com alteração focal da consciência: acordado, responde, mas com foco extremamente direcionado, ignorando o resto do ambiente."],
+["1","Delirium","Quais as quatro marcas do delirium?","Mnemônico AFOC: Atenção prejudicada, Flutuação ao longo do dia, Orgânico sempre (causa intra ou extracraniana), Ciclo sono e vigília alterado com piora noturna."],
+["1","Delirium","Delirium é transtorno psiquiátrico primário? Qual a conduta?","Não. É sempre secundário a uma condição clínica, agudo ou subagudo, e é emergência clínica: investigar e corrigir a causa de base imediatamente."],
+["1","Delirium","O que é o fenômeno de sundowning?","Piora noturna do delirium, ligada à alteração do ciclo circadiano."],
+["1","Delirium","Qual o exemplo clássico de delirium?","Idoso internado com infecção urinária que de dia parece melhor e à noite fica confuso, agitado, não reconhece familiares e diz que «tem gente no quarto querendo pegá-lo»."],
+["1","Consciência do eu","Quais são as cinco dimensões da consciência do eu?","Atividade (autoria dos atos), existência (estar vivo), unidade (ser único e indivisível), identidade (continuidade no tempo) e limite (distinção entre eu e mundo).\nMnemônico: AEUIL."],
+["1","Consciência do eu","Dê um exemplo de alteração da atividade do eu.","«Esses pensamentos não são meus, alguém colocou na minha cabeça» ou «meu braço mexeu e não fui eu». Típico do delírio de influência."],
+["1","Consciência do eu","Dê um exemplo de alteração do limite do eu.","«Todo mundo consegue ouvir o que eu penso» ou «eles colocam pensamentos na minha cabeça». Ocorre nas psicoses, com perda da delimitação entre mundo interno e externo."],
+["1","Consciência do eu","O que é a identidade do eu e como se altera?","Percepção de continuidade ao longo do tempo e coerência biográfica, ligada à memória. Alterada: «essa vida não é minha», «não sei quem eu fui antes»."],
+["1","Orientação","Orientação autopsíquica alterada sugere o quê?","Mais frequentemente quadro psiquiátrico primário. É a orientação sobre si («quem sou eu?»): «eu sou um rei», «não sei quem eu sou»."],
+["1","Orientação","Orientação alopsíquica alterada sugere o quê?","Mais frequentemente causa orgânica (delirium, demência, quadros neurológicos). Envolve tempo, espaço e situação: «estamos em 1995», «estou em casa» estando internado.\nMacete: AUTO = psiquiátrico; ALO = orgânico."],
+["1","Atenção","O que é atenção (prosexia)?","Direção da consciência: capacidade de focalizar a atividade psíquica, organizando o campo em figura (foco nítido) e fundo (periferia difusa)."],
+["1","Atenção","Diferencie tenacidade de vigilância.","Tenacidade: manter o foco num estímulo ao longo do tempo.\nVigilância: deslocar o foco para novos estímulos.\nNormalmente funcionam de forma antagônica."],
+["1","Atenção","Em que quadros a atenção é hipotenaz e em quais é hipertenaz?","Hipotenaz (perde o fio): ansiedade, TDAH, delirium.\nHipertenaz (preso a um tema): ideias obsessivas, depressão, paranoia."],
+["1","Atenção","Quais são os pares habituais de tenacidade e vigilância?","Hipotenaz com hipervigil (distraído por tudo) e hipertenaz com hipovigil (preso e travado)."],
+["1","Atenção","Quais as duas exceções aos pares habituais da atenção?","Hipoprosexia: depressão grave, hipotenaz + hipovigil, com lentificação global.\nHiperprosexia: mania, hipertenaz + hipervigil, com exaltação da energia psíquica.\nMacete: na depressão tudo hipo; na mania tudo hiper."],
+["1","Memória","Quais as três etapas da memória?","Codificação (registro), armazenamento (manutenção) e evocação (recuperação). Macete: CAE."],
+["1","Memória","Características da memória imediata?","Retém a informação logo que recebida, dura menos de 2 minutos sem repetição, depende fortemente da atenção e é a base das memórias duradouras."],
+["1","Memória","O que é memória de trabalho?","Memória imediata somada à capacidade de operar a informação (fazer contas de cabeça, discar um número enquanto lê). É praticamente inseparável da atenção e sustenta raciocínio e planejamento."],
+["1","Memória","Quais os subtipos da memória declarativa? Saber a própria data de nascimento é qual?","Episódica (autobiográfica, com contexto temporal e emocional) e semântica (fatos e conhecimentos).\nSaber a data de nascimento sem lembrar o evento é memória semântica."],
+["1","Memória","Quais os subtipos da memória não declarativa?","Procedural (dirigir, andar de bicicleta, amarrar sapatos) e priming (estímulo prévio influencia a resposta sem que a pessoa perceba)."],
+["1","Memória","Qual memória se altera primeiro na demência?","A episódica, nas fases iniciais; a semântica também pode se alterar."],
+["1","Memória","Diferencie amnésia anterógrada de retrógrada.","Anterógrada: não consolida memórias novas e preserva as antigas (Alzheimer inicial).\nRetrógrada: perde memórias anteriores ao evento causal, mais as recentes (TCE, crises epilépticas, trauma)."],
+["1","Memória","O que é amnésia lacunar e onde ocorre?","Perda de memória de um período específico. Blackout alcoólico, epilepsia, TCE e estados crepusculares."],
+["1","Memória","O que é amnésia seletiva?","Perda de memória de conteúdo específico, geralmente afetivamente carregado, ligada a mecanismos dissociativos."],
+["1","Memória","Onde ocorre hipermnésia?","Após experiências traumáticas (lembrança excessivamente consolidada e recorrente) e em estados maníacos."],
+["1","Memória","O que é alomnésia?","Memória baseada em fato real, porém distorcida: erro cronológico, amplificação emocional ou distorção do conteúdo."],
+["1","Memória","O que é criptomnésia?","Memória evocada como se fosse ideia nova e original; falha em identificar a origem da lembrança («pensei num app de entrega» que já tinha visto)."],
+["1","Memória","O que é confabulação e onde é típica?","Preenchimento de lacunas de memória com relatos falsos, sem intenção de mentir; o paciente acredita no que diz.\nTípica de demências e síndrome de Korsakoff; em menor grau no TDAH e em qualquer desatento."],
+["1","Memória","Onde ocorrem déjà-vu e jamais-vu?","Em pessoas saudáveis e também na epilepsia do lobo temporal e outros quadros neurológicos."],
+["1","Inteligência","O que mudou com a Teoria das Múltiplas Inteligências?","Surgiu na década de 1980 e ampliou o conceito além da lógica (foco do QI nos séculos XIX e XX), incluindo artes, relações interpessoais e autoconhecimento. Outros tipos: cognição social, abstração e inteligência emocional."],
+["1","Linguagem","Logorreia e taquilalia: o que são e onde ocorrem?","Logorreia: fala excessiva, contínua, difícil de interromper. Taquilalia: fala acelerada. Ambas típicas da mania (taquilalia com fuga de ideias)."],
+["1","Linguagem","O que é bradilalia?","Fala lentificada com aumento da latência de resposta, ligada a bradipsiquismo e lentificação psicomotora, como na depressão grave."],
+["1","Linguagem","Em que quadros ocorre mutismo?","Catatonia, quadros psicóticos graves, transtornos dissociativos e condições neurológicas."],
+["1","Linguagem","Mussitação e solilóquio sugerem o quê?","Resposta a estímulos internos, como alucinações auditivas. Mussitação = murmúrio baixo «para dentro»; solilóquio = dialogar consigo em voz alta."],
+["1","Linguagem","Diferencie ecolalia de palilalia.","Ecolalia: repete a última palavra ou frase do outro (catatonia, TEA, síndromes neurológicas).\nPalilalia: repete as próprias palavras («sair, sair, sair»).\nMacete: ECO = do outro; PALI = de si."],
+["1","Linguagem","O que é neologismo?","Palavra inventada com significado apenas para o paciente («dor espirulante»). Associado à esquizofrenia; reflete alteração formal do pensamento."],
+["1","Linguagem","O que é pararresposta? Exemplo.","Resposta inadequada, mas com alguma relação com a pergunta: «Que dia você nasceu?» «Belo Horizonte». Indica desorganização parcial do pensamento."],
+["1","Humor e afeto","Qual a diferença entre humor e afeto?","Humor: estado emocional interno e sustentado, o que o paciente sente.\nAfeto: expressão externa observada pelo examinador (face, voz, postura).\nNo EEM descreve-se o afeto observado."],
+["1","Humor e afeto","Quais os tipos de humor?","Normotímico, hipotímico (tristeza, pouca energia, depressão), hipertímico (euforia ou elação, mania), disforia (desagradável, irritado, hostil) e irritabilidade («pavio curto» patológico)."],
+["1","Humor e afeto","Por que disforia não é o mesmo que hipotimia?","Disforia e irritabilidade envolvem aumento da excitação psíquica e da reatividade; a hipotimia envolve lentificação e redução de energia."],
+["1","Humor e afeto","Quais os graus de modulação do afeto?","Hipermodulado (teatral, desproporcional), normomodulado (reativo e proporcional), hipomodulado (sente, mas expressa pouco; pode ocorrer no TEA) e embotado (perda quase total da vivência e da reação)."],
+["1","Humor e afeto","Onde ocorre afeto embotado?","Esquizofrenia grave e outros quadros psicóticos crônicos: rosto inexpressivo, voz monótona."],
+["1","Humor e afeto","Diferencie afeto lábil de incontinência afetiva.","Lábil: oscila intensamente em pouco tempo (chora, ri, volta a chorar).\nIncontinência afetiva: reação exagerada e prolongada que o paciente não consegue conter (não para de chorar ou de rir)."],
+["1","Humor e afeto","O que é afeto incongruente?","Emoção expressa incompatível com o conteúdo do discurso ou com o humor relatado: diz estar triste e está rindo."],
+["1","Pensamento","Quais os três eixos de avaliação do pensamento?","Curso (velocidade), forma (arquitetura, coerência) e conteúdo (tema). Mnemônico: CFC."],
+["1","Pensamento","Defina conceito, juízo e raciocínio.","Conceito: representação mental das coisas. Juízo: união de conceitos («o céu é azul»). Raciocínio: relação entre juízos, que leva a conclusões."],
+["1","Pensamento","Quais as alterações do curso do pensamento e onde ocorrem?","Aceleração/taquipsiquismo (mania, estimulantes, ansiedade extrema); lentificação/bradipsiquismo (depressão grave, intoxicações, rebaixamento de consciência); bloqueio e roubo (esquizofrenia)."],
+["1","Pensamento","O que é bloqueio e o que é roubo do pensamento?","Bloqueio: interrupção abrupta do relato sem causa aparente. Roubo: sensação de que uma força externa retirou o pensamento. Ambos típicos da esquizofrenia."],
+["1","Pensamento","O que é fuga de ideias?","Aceleração com troca rápida e contínua de temas, mantendo ligações superficiais por assonância (amor, flor, cor, dor) ou por estímulos do ambiente. Mania, hipomania e estimulantes."],
+["1","Pensamento","Qual a escala de gravidade da desorganização formal do pensamento?","1. Afrouxamento dos laços associativos (confuso, mas entende-se o tema).\n2. Descarrilhamento (sem conexão lógica clara).\n3. Desagregação (fragmentação total, salada de palavras).\nMacete: ADD."],
+["1","Pensamento","O que é pensamento mágico e onde aparece?","Não respeita tempo, espaço e causalidade; crê que pensamentos, palavras ou rituais influenciam a realidade. Fantasias infantis, superstições e TOC."],
+["1","Pensamento","Diferencie pensamento prolixo de arborizado.","Prolixo: muitas voltas, tangencialidade e circunstancialidade, demora ou não chega ao ponto.\nArborizado: ramificação em ideias colaterais com extravio momentâneo da meta («por que eu estava falando isso?»)."],
+["1","Pensamento","O que é pensamento concreto e onde ocorre?","Redução da abstração, interpretação literal, dificuldade com metáforas e ironias. Deficiência intelectual, psicoses, TEA e demência."],
+["1","Juízo","Diferencie juízo crítico de juízo de realidade.","Juízo crítico: avaliar consequências dos próprios atos.\nJuízo de realidade: diferenciar o real do imaginado e corrigir crenças diante de evidências.\nNem todo psicótico perde o juízo crítico."],
+["1","Juízo","Quais as características da ideia sobrevalorada?","Mantém algum vínculo com a realidade, é sustentada com convicção, egossintônica, induz ações e pode progredir para delírio."],
+["1","Juízo","Quais as três características do delírio?","Certeza irremovível, não passível de argumentação lógica e não modificável diante das evidências. É incompatível com a realidade compartilhada e não é crença cultural."],
+["1","Juízo","Quais os tipos de delírio da Aula 1?","Persecutório, referência, influência, grandeza, místico ou religioso, erotomania, ruína, Cotard e Ekbom. Mnemônico: PRIGMERCE."],
+["1","Juízo","Qual o tipo de delírio mais comum?","Persecutório. Pode visar alguém específico (vizinho, colega, instituição); ocorre na esquizofrenia, no transtorno delirante e no TAB com psicose."],
+["1","Juízo","O delírio de influência fere qual função?","A consciência do eu: o indivíduo deixa de se perceber como autor dos próprios atos. Comum na esquizofrenia, ligado à perda dos limites entre eu e mundo."],
+["1","Juízo","O que são os delírios de Cotard e de Ekbom?","Cotard: negação de órgãos, «o corpo está morto, não tenho sangue».\nEkbom: infestação do corpo por bichos."],
+["1","Sensopercepção","Qual a diferença entre delírio e alucinação?","Delírio é alteração do pensamento (crença falsa). Alucinação é alteração da percepção (percepção vivida como real sem objeto presente)."],
+["1","Sensopercepção","Diferencie alucinação auditiva verdadeira de pseudoalucinação.","Verdadeira: «escuto no ouvido, vem de fora», projetada no ambiente; o paciente descreve sexo, timbre e número das vozes.\nPseudoalucinação: «escuto dentro da cabeça», vivida no espaço psíquico."],
+["1","Sensopercepção","Quais sinais indiretos sugerem alucinação auditiva?","Solilóquio, mussitação, olhar perplexo ou atento ao vazio, latência na resposta, maneirismos ligados às vozes. As vozes podem comentar, conversar entre si ou dar ordens (imperativas)."],
+["1","Sensopercepção","Alucinação visual em transtorno psiquiátrico primário: o que fazer?","São infrequentes. Se não forem muito congruentes com o delírio, pesquisar alteração neurológica. Podem ser simples (vultos, luzes) ou complexas (pessoas, animais com detalhes)."],
+["1","Sensopercepção","Alucinação olfativa em paciente não psicótico sugere o quê?","Aura e outros quadros neurológicos. Em psicóticos, acompanha delírio compatível."],
+["1","Sensopercepção","Diferencie alucinação cenestésica de cinestésica.","Cenestésica: sensação nas vísceras, associada a Cotard.\nCinestésica: movimento do corpo (perna encolhendo, cabeça inchando)."],
+["1","Sensopercepção","O que são alucinações hipnagógicas e hipnopômpicas?","Fenômenos fisiológicos na transição sono e vigília: hipnagógicas ao adormecer, hipnopômpicas ao acordar. Breves, criticadas depois e sem prejuízo."],
+["1","Sensopercepção","Diferencie ilusão, alucinação e alucinose.","Ilusão: objeto real interpretado de forma distorcida (casaco vira pessoa).\nAlucinação: sem objeto, sem crítica (psicose).\nAlucinose: sem objeto, com crítica preservada, mais em quadros orgânicos."],
+["1","Sensopercepção","Onde ocorrem as alucinoses?","Visuais: tumores, epilepsia, alucinógenos, abstinência alcoólica, síndrome de Charles Bonnet (déficit visual).\nAuditivas: alucinose alcoólica no início da abstinência (vozes em terceira pessoa) e depressão."],
+["1","Vontade","Quais os componentes da volição?","Instinto (resposta inata, fome leva a comer), desejo (o querer, pode não virar ação), inclinação (tendência estável de escolha) e motivação (força que dispara a ação, interna ou externa)."],
+["1","Vontade","Diferencie hipobulia de abulia.","Hipobulia: diminuição da vontade («sei que preciso tomar banho, mas não consigo levantar»); depressão, esquizofrenia.\nAbulia: perda quase completa, fica parado o dia todo; quadros graves e lesões frontais."],
+["1","Vontade","Qual a diferença entre ato impulsivo e ato compulsivo?","Impulsivo: passa direto da intenção à ação, buscando satisfação imediata (automutilação em pico emocional).\nCompulsivo: repetitivo, sentido como obrigatório, alivia ansiedade (lavar as mãos, conferir a porta; TOC)."],
+["1","Psicomotricidade","Diferencie lentificação de agitação psicomotora.","Lentificação: reflete bradipsiquismo, latência aumentada; depressão grave, demência.\nAgitação: inquietação, gesticulação, risco de heteroagressividade; mania, psicose, intoxicação, abstinência."],
+["1","Psicomotricidade","O que é estupor?","Perda de toda atividade espontânea: acordado, sem fala, mímica, olhar ou gestos, sem reagir ao ambiente. Catatonia e quadros neurológicos e metabólicos."],
+["1","Psicomotricidade","Diferencie cataplexia de catalepsia.","Cataplexia: perda abrupta do tônus com queda e consciência preservada, disparada por emoção (riso); narcolepsia.\nCatalepsia: hipertonia com manutenção de posturas impostas; catatonia."],
+["1","Psicomotricidade","Quais os sinais da catatonia?","Negativismo, estupor e catalepsia, agitação extrema, ecopraxia, ecolalia e obediência automática. Mnemônico NECO. Exige reconhecimento precoce pelo risco de complicações clínicas."],
+
+// ===== AULA 3 =====
+["3","Distimia","Qual o critério temporal do transtorno depressivo persistente (distimia)?","Humor deprimido na maior parte do dia, quase todos os dias, por pelo menos 2 anos, sem passar mais de 2 meses seguidos sem sintomas, com pelo menos 2 sintomas associados."],
+["3","Distimia","Quais os sintomas associados da distimia?","Mnemônico ASEADO: Apetite alterado, Sono alterado, Energia baixa, Autoestima baixa, Dificuldade de concentração ou indecisão, Olhar sem esperança (desesperança)."],
+["3","TDPM","Quais os critérios do transtorno disfórico pré-menstrual?","Na maioria dos ciclos, de até 1 semana antes a até 1 semana depois da menstruação, 5 sintomas no total, sendo pelo menos 1 afetivo."],
+["3","TDPM","Quais os sintomas afetivos do TDPM?","Labilidade do humor; irritabilidade, raiva ou mais conflitos; humor deprimido, desesperança ou autodepreciação; ansiedade, tensão, sensação de estar «no limite»."],
+["3","TDPM","O TDPM exige tratamento obrigatório?","Não, diferente do TDM. A paciente costuma buscar ajuda quando o incômodo é intenso ou prolongado."],
+["3","TDM curso","Quando começa e qual o curso do TDM?","Incidência aumenta após a puberdade, pico na década dos 20 anos, início tardio não é incomum. Curso crônico e recidivante; o risco de recorrência cai quanto maior o tempo de remissão."],
+["3","TDM curso","Quais fatores aumentam o risco de recorrência do TDM?","Mnemônico GRAVE: Gravidade ou duração do episódio anterior, Repetição (múltiplos episódios), Antes dos 20 anos, Vida funcional prejudicada, Enfrentamento mal adaptativo e alto neuroticismo."],
+["3","TDM rastreio","Quais fatores clínicos indicam rastreio de depressão?","Depressão prévia ou familiar, adversidade psicossocial desde a infância, hiperutilização do sistema de saúde, doenças crônicas (cardiovasculares, diabetes, neurológicas), outros transtornos psiquiátricos e períodos hormonais (periparto, perimenopausa)."],
+["3","TDM rastreio","Quais fatores sintomáticos indicam rastreio de depressão?","Sintomas físicos inexplicados, dor crônica, fadiga, insônia, ansiedade e abuso de substâncias."],
+["3","TDM critérios","Qual o critério diagnóstico do TDM (DSM-5-TR)?","5 ou mais sintomas por 2 semanas, sendo pelo menos 1 principal: humor deprimido ou anedonia."],
+["3","TDM critérios","Quais os sintomas adicionais do TDM?","Alteração de peso ou apetite sem dieta, insônia ou hipersonia, agitação ou retardo psicomotor observável, fadiga, culpa excessiva ou inutilidade, menor concentração ou indecisão, pensamentos de morte, ideação suicida ou TAE."],
+["3","TDM critérios","Como diferenciar depressão leve de grave?","Leve: poucos sintomas além do mínimo, sofrimento manejável, cumpre o obrigatório com mais esforço e abandona o não obrigatório.\nGrave: muitos sintomas, sofrimento não manejável, deixa de fazer o que precisa.\nA classificação é altamente subjetiva."],
+["3","Luto","Quando o luto deve levar à investigação de transtorno?","Quando a interrupção importante da vida se prolonga, ou os sintomas passam de cerca de 2 semanas com grande prejuízo. Avaliar TDM ou Transtorno do Luto Prolongado (DSM-5-TR 2022, capítulo de Trauma e Estressores)."],
+["3","Fisiopatologia","Qual a herdabilidade da depressão e o principal achado genético?","37%. Alelo S do gene do transportador de serotonina; impacto menor de polimorfismos do BDNF, inflamatórios e de outros receptores. A epigenética explica como o ambiente «acorda» a genética; trauma precoce aumenta o risco."],
+["3","Fisiopatologia","Como a predisposição genética afeta o cérebro na depressão?","Reduz a neuroplasticidade (formar e desfazer sinapses, aprender, mudar comportamento), com influência do sistema imune, e se associa a encurtamento dos telômeros e envelhecimento celular precoce."],
+["3","Fisiopatologia","Qual a base histórica da teoria monoaminérgica?","A reserpina, anti-hipertensivo que bloqueia o armazenamento das monoaminas em vesículas, reduzia sua disponibilidade e causava depressão. Propõe falta de serotonina, noradrenalina e dopamina no córtex pré-frontal."],
+["3","Fisiopatologia","Por que a teoria monoaminérgica não explica tudo?","Os antidepressivos aumentam as monoaminas, mas melhoram cerca de 60% dos sintomas, indicando que a falta de monoaminas não é a única causa."],
+["3","Fisiopatologia","O que propõe a teoria dos receptores monoaminérgicos?","Desloca o foco para os receptores pós-sinápticos, com suprarregulação compensatória, o que explica a latência de cerca de 2 semanas. Teorias recentes: falha na transdução de sinal distal, na expressão gênica e nos fatores neurotróficos, mesmo com monoaminas normais."],
+["3","Fisiopatologia","Qual o papel do BDNF e o que acontece com ele na depressão?","É o «regador» da árvore dendrítica: crescimento, manutenção e plasticidade. Na depressão há polimorfismos e queda do BDNF, com atrofia do hipocampo em estudos post mortem na depressão crônica."],
+["3","Fisiopatologia","Qual o principal fator que reduz o BDNF?","Estresse crônico com cortisol persistentemente elevado. Também: privação de sono, sedentarismo, má alimentação, adversidade na infância, inflamação crônica e genética."],
+["3","Fisiopatologia","Por que a psicoterapia pode render menos em alguns deprimidos?","A plasticidade reduzida (baixo BDNF) dificulta ressignificar experiências e adaptar circuitos neurais."],
+["3","Fisiopatologia","Quais citocinas estão aumentadas na depressão?","IL-6, IL-1, TNF-α e PCR (proteína C reativa)."],
+["3","Fisiopatologia","Por quais vias as citocinas chegam ao SNC e o que causam lá?","Pelo sangue (BHE mais permeável na inflamação) e pelo nervo vago. No SNC reduzem monoaminas e BDNF."],
+["3","Fisiopatologia","Por que o deprimido tem maior risco cardiovascular?","A interação do sistema imune com o eixo HPA eleva cortisol, citocinas e agregação plaquetária, piorando o prognóstico de doenças crônicas."],
+["3","Fisiopatologia","Quais sinais sugerem depressão com perfil inflamatório?","Mnemônico LACAP: Lentidão (retardo psicomotor), Amotivação severa, Cognição prejudicada, Ansiedade elevada, PCR ultrassensível maior que 3. Pede estratégia mais dopaminérgica e frequentemente combinação de antidepressivos."],
+["3","Fisiopatologia","Quanto da microbiota é igual entre as pessoas?","Cerca de 1/3. Os outros 2/3 variam com tipo de parto, amamentação, alimentação, estilo de vida e ambiente."],
+["3","Fisiopatologia","Quais as funções neurobiológicas da microbiota intestinal?","Mantém a BHE, participa da neurogênese, amadurece a micróglia, produz neurotrofinas e neurotransmissores e regula o eixo HPA."],
+["3","Fisiopatologia","Como a disbiose pode causar depressão?","Aumenta a permeabilidade dos enterócitos, bactérias e produtos passam à circulação, geram citocinas que chegam ao SNC pelo vago ou pelo sangue e alteram neurotransmissores, plasticidade, neurogênese e função neuroendócrina."],
+["3","Fisiopatologia","O que é a tríade cognitiva de Beck?","Pensamentos automáticos sobre si, o mundo e o futuro; na depressão tornam-se negativos. A emoção nasce da interpretação da situação, e experiências negativas são mais armazenadas que as positivas."],
+["3","Tratamento","Se 50% dos episódios remitem em 1 ano, por que tratar?","Para evitar que sintomas e consequências psicológicas e biológicas persistam. A decisão deve ser compartilhada, o que aumenta a adesão; o placebo também contribui."],
+["3","Tratamento","Como escolher o neurotransmissor alvo pelo perfil de sintomas?","Reatividade emocional e afeto negativo: serotonina.\nDesmotivação, anergia, pouca iniciativa: dopamina.\nPouco interesse, má concentração, baixa energia: noradrenalina.\nDopamina e noradrenalina sobem juntas."],
+["3","ADT","Como agem os tricíclicos e quais as particularidades de cada um?","Inibem a recaptação de serotonina e noradrenalina.\nAmitriptilina: potente nos dois. Nortriptilina: mais noradrenérgica, menos efeitos. Imipramina: off label em enurese e incontinência. Clomipramina: a mais serotoninérgica, usada no TOC."],
+["3","ADT","Qual a dose de ADT para depressão?","Cerca de 75 mg ou mais. Doses menores servem a outras indicações."],
+["3","ADT","Quais os cuidados com os tricíclicos?","Mnemônico CIEA: Coração (arritmia, QTc longo), Interações pelo CYP450, Epilepsia (reduz limiar convulsivo), Anticolinérgico no idoso (quedas, confusão)."],
+["3","ADT","Quais os usos off label dos tricíclicos?","Mnemônico DICE: Dor crônica neuropática, Intestino irritável, Cefaleia e profilaxia de enxaqueca, Enurese noturna e incontinência urinária."],
+["3","ISRS","Qual o mecanismo dos ISRS e por que demoram a agir?","Bloqueiam o SERT e aumentam a serotonina na fenda. No início, os autorreceptores pré-sinápticos fazem feedback negativo e freiam a liberação; com o uso, sofrem infrarregulação, o freio cai e a liberação aumenta. Latência de 6 a 8 semanas."],
+["3","ISRS","Fluoxetina: dose e particularidades.","20 a 80 mg. No SUS, aprovada na infância e na gestação, meia-vida longa, reduz o apetite nas primeiras semanas."],
+["3","ISRS","Sertralina: dose e particularidades.","50 a 200 mg. Aprovada na infância, boa na gestação e amamentação, poucas interações, bom perfil cardiovascular."],
+["3","ISRS","Citalopram: dose e particularidades.","20 a 40 mg. Menos potente (metade da molécula se liga sem ação funcional). Máximo de 30 mg acima de 85 anos pelo QTc."],
+["3","ISRS","Escitalopram: dose e particularidades.","10 a 20 mg. Fração ativa do citalopram, mais potente, só serotoninérgico, opção na gestação. Máximo de 15 mg acima de 85 anos (QTc e hiponatremia)."],
+["3","ISRS","Paroxetina: dose e particularidades.","20 a 60 mg. O mais serotoninérgico, mais efeitos colaterais, maior ganho de peso e mais disfunção sexual."],
+["3","ISRS","Fluvoxamina: dose e principal uso.","100 a 300 mg. Muito usada no TOC."],
+["3","ISRS","Quais os efeitos adversos dos ISRS?","Mnemônico HQ SEDI: Hiponatremia (mais ADH, no início), QTc longo, Sangramento (menor agregação plaquetária), Embotamento emocional, Disfunção sexual, Interações."],
+["3","ISRS","Por que os ISRS podem causar embotamento emocional?","O excesso de serotonina reduz a dopamina em algumas áreas, diminuindo a capacidade de sentir emoções positivas e negativas («anestesia afetiva»)."],
+["3","ISRS","Quais ISRS têm maior potencial de interação?","Fluoxetina, paroxetina e fluvoxamina, com cuidado especial ao associar a tricíclicos."],
+["3","IRSN","Quando preferir um IRSN?","Quando predomina redução do afeto positivo, com menos afeto negativo. Melhoram energia, motivação, interesse e cognição."],
+["3","IRSN","Venlafaxina: dose e particularidades.","75 a 225 mg (até 300). Muito potente. Em dose baixa é só serotoninérgica; ação noradrenérgica real a partir de cerca de 150 mg. Eleva pressão arterial e causa sudorese."],
+["3","IRSN","Desvenlafaxina: dose e particularidades.","50 a 200 mg. Mínima interação e metabolismo hepático simples, menos disfunção sexual, trata fogachos do climatério."],
+["3","IRSN","Duloxetina: dose e particularidades.","60 a 120 mg (dor a partir de 30 mg). Eficaz em dor neuropática e crônica mesmo sem depressão; piora doença hepática e exige cautela com álcool; menos disfunção sexual e menos retirada que a venlafaxina."],
+["3","IRSN","Quais os sintomas da síndrome de retirada dos IRSN?","Insônia, náuseas, desequilíbrio, sensação de «choque», hiperexcitabilidade ou ansiedade e quadro gripal. Mais com venlafaxina e duloxetina."],
+["3","Outros","Bupropiona: dose, mecanismo e vantagens.","150 a 300 mg. Inibe recaptação de dopamina e noradrenalina. Trata tabagismo (receptores nicotínicos). Baixo risco de disfunção sexual e pode corrigir a causada por ISRS."],
+["3","Outros","Trazodona: doses e indicação.","Insônia: 25 a 150 mg. Depressão: 150 a 375 mg (Contramid, liberação de 24 horas). Depressão com ansiedade e insônia; pouca disfunção sexual."],
+["3","Outros","Vilazodona: dose e particularidades.","20 a 40 mg. Depressão ansiosa, pouca disfunção sexual; náusea e diarreia, tomar com alimento."],
+["3","Outros","Mirtazapina: dose, mecanismo e efeitos.","30 a 45 mg (até 60). Antagonista alfa 2 adrenérgico: tira o freio pré-sináptico e aumenta noradrenalina e serotonina. Sonolência (dose baixa para insônia) e ganho de peso. Com venlafaxina forma o «combustível de foguete da Califórnia»."],
+["3","Outros","Vortioxetina: dose e diferencial.","10 a 20 mg (até 30). Multimodal; melhor para queixas cognitivas (memória, concentração); pouca disfunção sexual; náusea é o principal efeito."],
+["3","Outros","Agomelatina: dose e cuidado.","25 a 50 mg. Regula o ritmo circadiano. Monitorar função hepática (risco de hepatotoxicidade)."],
+["3","Outros","Quais antidepressivos causam pouca disfunção sexual?","Bupropiona, trazodona, vilazodona, vortioxetina e desvenlafaxina (e duloxetina menos que venlafaxina)."],
+["3","Adjuvantes","Qual o papel do lítio na depressão unipolar?","Efeito antissuicídio transdiagnóstico; não é primeira, segunda nem terceira linha na depressão aguda; pode reduzir a latência como potencializador. Fora do TAB não é obrigatório atingir litemia terapêutica, mas é recomendado monitorar."],
+["3","Adjuvantes","Quais antipsicóticos potencializam antidepressivos e quais seus efeitos?","Aripiprazol, brexpiprazol, quetiapina, olanzapina e risperidona. Das estratégias mais estudadas na depressão resistente. Efeitos: ganho de peso e alterações metabólicas, prolactina alta, extrapiramidais e QTc longo."],
+["3","Adjuvantes","Quais as indicações da ECT na depressão?","Depressão refratária, baixa tolerância a medicamentos e risco iminente de suicídio (80% a 90% das indicações). Métodos não convulsivos são menos eficazes."],
+["3","Adjuvantes","Quanto a ECT reduz a ideação suicida?","Cerca de 38% após 1 semana, 61% após 2 semanas e 81% ao final do tratamento."],
+["3","Adjuvantes","Quais os efeitos colaterais da ECT e suas contraindicações?","Imediatos: cefaleia, náuseas ou vômitos pelo anestésico, confusão pós-ictal. Curto prazo: amnésia anterógrada lacunar benigna, delirium. Longo prazo: amnésia anterógrada e relatos de retrógrada, mas a memória acaba semelhante à da população geral.\nNão tem contraindicação absoluta."],
+["3","Adjuvantes","Como se usa a escetamina?","Depressão resistente e alto risco de suicídio, sempre com um antidepressivo, em dose subanestésica, via endovenosa, subcutânea ou intranasal (Spravato), em ambiente controlado e em múltiplas sessões."],
+["3","Adjuvantes","Qual o mecanismo da escetamina?","Antagoniza o receptor NMDA, aumenta glutamato e dopamina no córtex pré-frontal, ativa receptores AMPA, eleva o BDNF e restaura a neuroplasticidade."],
+["3","Adjuvantes","Compare a EMT com a ECT.","EMT: não invasiva, cara, paciente acordado, sem convulsão, muito poucos efeitos, porém menos eficaz e com mais sessões."],
+["3","Psicoterapia","O que a TCC faz na depressão?","Reestruturação cognitiva: identifica pensamentos automáticos e distorções (catastrofização, generalização, tudo ou nada), questiona pelo método socrático («quais evidências?», «há explicação alternativa?», «é fato ou sentimento?») e substitui por interpretações realistas."],
+["3","Psicoterapia","Qual o princípio da ativação comportamental?","A perda de reforço positivo contribui para a depressão. Agir primeiro para a motivação vir depois, mapeando atividades prazerosas (engajamento) e aversivas (esquiva)."],
+["3","Psicoterapia","Quais as quatro áreas-problema da terapia interpessoal?","Luto, disputas interpessoais, mudança de papéis e déficits interpessoais. É breve, para depressão maior unipolar não psicótica na fase aguda."],
+
+// ===== AULA 4 =====
+["4","Epidemiologia","Três números de epidemiologia do TAB.","12,5% a 30% dos diagnosticados com depressão são bipolares; risco de suicídio 15 vezes maior; o diagnóstico do tipo II pode levar até 20 anos. Alta herdabilidade."],
+["4","Episódios","Quais as durações mínimas de mania, hipomania e depressão?","Mania: 7 dias (ou qualquer duração se houver internação). Hipomania: 4 dias consecutivos. Depressão maior: 2 semanas.\nMacete: 7, 4, 14."],
+["4","Episódios","O que define a gravidade do episódio maníaco?","Prejuízo acentuado social ou profissional, necessidade de internação ou presença de sintomas psicóticos."],
+["4","Episódios","O que caracteriza a hipomania?","Sintomas semelhantes à mania com mudança clara e perceptível do funcionamento, sem prejuízo grave, sem internação e sem psicose."],
+["4","Episódios","Quantos sintomas maniformes são necessários?","Humor elevado, expansivo ou irritável com aumento de energia, mais 3 sintomas; ou 4 se o humor for apenas irritável."],
+["4","Episódios","Quais os sintomas maniformes?","Grandiosidade, menor necessidade de sono, loquacidade e pressão para falar, fuga de ideias ou pensamento acelerado, distraibilidade, aumento de atividade dirigida ou agitação, envolvimento em atividades danosas (gastos, sexo de risco)."],
+["4","Tipos","O que define TAB tipo I?","Pelo menos 1 episódio maníaco na vida. Depressão pode ocorrer, mas não é necessária."],
+["4","Tipos","O que define TAB tipo II?","Pelo menos 1 hipomania e 1 depressão maior, sem nenhuma mania (uma mania reclassifica como tipo I)."],
+["4","Tipos","O que é ciclotimia?","Diagnóstico próprio: oscilações crônicas com sintomas hipomaníacos e depressivos que não fecham critérios completos, por pelo menos 2 anos, sem passar mais de 2 meses assintomático, não explicadas por substâncias, TDPM ou condição médica. «Distimia da bipolaridade»."],
+["4","Tipos","Qual a evolução e o manejo da ciclotimia?","Até 50% evoluem para TAB. Beneficia-se de rotina estruturada: sono, atividades e tratamento regulares."],
+["4","Conceitos","Qual a melhor forma de perguntar sobre o humor no TAB?","Avaliar energia, atividade e produtividade, que o paciente descreve melhor que o humor. Na hipomania assume múltiplas tarefas e frequentemente termina em sobrecarga e burnout."],
+["4","Conceitos","O que é eutimia?","Período de estabilidade sem sintomas significativos; o humor ainda oscila levemente com os eventos, o que é fisiológico."],
+["4","Conceitos","O que é episódio misto?","Sintomas simultâneos dos dois polos, geralmente depressão com características mistas: a pior parte dos dois, energia baixa e incapacidade de agir com mente acelerada. Mais grave e difícil de manejar."],
+["4","Conceitos","O que é ciclagem rápida?","Especificador do tipo I ou II: 4 ou mais episódios em 12 meses (ou 2 a cada 2 meses se de um só polo), delimitados por remissão de 2 meses ou virada direta. Dificulta a estabilização."],
+["4","Neurobiologia","Quais os achados neurobiológicos do TAB?","Citocinas inflamatórias elevadas nos episódios, BDNF reduzido, falha na limpeza de escórias metabólicas (autofagia), bomba Na+/K+ ATPase alterada e inibição do ciclo de Krebs."],
+["4","Neurobiologia","O que é a bipolaridade do sistema dopaminérgico?","Na mania a dopamina sobe nas vias mesolímbicas; o cérebro compensa aumentando o DAT (transportador de dopamina) e a recaptação; na eutimia e na depressão o DAT segue alto e a dopamina sináptica cai."],
+["4","Neurobiologia","Por que o TAB é neuroprogressivo?","Cada mania ou hipomania ativa cascatas de dopamina e glutamato que disparam apoptose, somadas a inflamação, queda do BDNF e falha mitocondrial. Sem tratamento os episódios pioram e ficam mais frequentes, podendo chegar a déficit semelhante à demência."],
+["4","Diferencial","Como diferenciar TAB de borderline?","TAB: episódios de dias a semanas, podem ocorrer sem gatilho, impulsividade na mania, suicídio ligado à depressão.\nBorderline: mudanças em horas, reativas a conflitos e medo de abandono, autoimagem instável, idealização e desvalorização, automutilação crônica."],
+["4","Diferencial","Como diferenciar TAB de TDAH?","TDAH: crônico e contínuo desde a infância, labilidade breve e reativa, hiperatividade constante, demora a dormir mas precisa dormir normalmente.\nTAB: episódico com eutimia, alterações sustentadas, energia alta na mania, menor necessidade de sono."],
+["4","Suicídio","Tentativas de suicídio no TAB I e II: qual a diferença?","Frequência semelhante, mas letalidade maior no tipo II."],
+["4","Suicídio","Quais os fatores de risco de suicídio no TAB?","Ciclagem rápida, episódio misto, tentativas prévias e história familiar de suicídio."],
+["4","Lítio","Quais as propriedades do lítio?","Estabilizador do humor, neuroprotetor (reduz a neuroprogressão) e antissuicídio transdiagnóstico. Dose individualizada pela clínica e pela litemia."],
+["4","Lítio","Qual a litemia alvo na mania?","Cerca de 1,0 mEq/L. No TAB é obrigatório buscar litemia terapêutica; em outros transtornos ajusta-se pela resposta clínica."],
+["4","Lítio","Como e quando coletar a litemia?","Primeira dosagem após 1 semana de uso regular, coletada 12 horas após a última tomada."],
+["4","Lítio","Com que frequência repetir a litemia?","Semanal até estabilizar, mensal por mais 2 a 3 meses, trimestral pelo resto do primeiro ano ou enquanto usar; semestral se muito estável e sem fatores de risco."],
+["4","Lítio","Quais exames pedir trimestralmente no uso de lítio?","Litemia, TSH, creatinina e cálcio."],
+["4","Lítio","Quais fármacos elevam a litemia e por quê?","Diuréticos (perda de sódio faz o túbulo reabsorver mais sódio e lítio) e AINE (menos prostaglandinas, menos fluxo renal e filtração). Relatos com IECA, metronidazol e propranolol."],
+["4","Lítio","Paciente em lítio com aumento importante do volume urinário: o que investigar?","Diabetes insípido, com urina de 24 horas; atenção também para intoxicação por lítio."],
+["4","Lítio","Lítio na gestação?","Uso controverso; risco baixo de malformação cardíaca; se a gestante usar, litemia mensal."],
+["4","Anticonvulsivantes","Para que a lamotrigina é aprovada e qual seu risco?","Somente para depressão bipolar. Risco de virada maníaca: associar a outro estabilizador."],
+["4","Anticonvulsivantes","Como titular a lamotrigina?","Alvo 200 a 400 mg (pode responder com menos). Iniciar 25 mg e subir a cada 2 semanas, podendo dobrar a dose, de preferência passando por doses intermediárias."],
+["4","Anticonvulsivantes","Quais as indicações do ácido valproico?","Mania aguda e manutenção, boa opção em ciclagem rápida, sintomas ansiosos e estados mistos. Segunda linha na depressão."],
+["4","Anticonvulsivantes","Como prescrever o valproato?","750 a 1800 mg (até 3 g); iniciar 250 mg e subir a cada 2 dias; guiar pela resposta clínica, sem dosagem obrigatória."],
+["4","Anticonvulsivantes","Quais os cuidados com o valproato?","Efeitos gástricos; rash cutâneo obriga suspender; teratogênico, proscrito em mulheres em idade fértil sem controle rigoroso."],
+["4","Anticonvulsivantes","Qual o lugar da carbamazepina no TAB?","Mania aguda e manutenção em segunda linha; não recomendada para depressão; pouco usada, muitas interações e menor evidência."],
+["4","Anticonvulsivantes","Por que não associar lamotrigina com ácido valproico?","Aumenta muito o risco de rash cutâneo grave, incluindo síndrome de Stevens Johnson."],
+["4","Tratamento","Qual o risco de usar antidepressivo no TAB?","Instabilidade ao longo do tempo e maior risco de estados mistos e ciclagem rápida. Evitar ao máximo."],
+["4","Tratamento","Quais as opções para depressão bipolar?","Lítio, quetiapina, lamotrigina e lurasidona (esta, na manutenção, só associada a algo que previna virada)."],
+["4","Tratamento","Qual o papel de olanzapina com fluoxetina?","Terceira linha, com muito cuidado, em paciente muito deprimido. Se usar antidepressivo no episódio, retirar na manutenção."],
+["4","Tratamento","Quais são os padrões ouro do TAB?","Lítio e quetiapina, aprovados para todas as fases. Quando a monoterapia funciona, costuma ser com um deles; na prática a monoterapia é rara."],
+["4","Tratamento","Qual combinação é útil com predomínio de episódios depressivos?","Lítio com lurasidona."],
+
+// ===== AULA 5 =====
+["5","Conceito","Defina comportamento suicida (suicídio).","Ato deliberado, consciente e intencional, executado pelo próprio indivíduo, cuja finalidade é a morte, usando um meio que ele acredita ser letal."],
+["5","Gravidade","Qual a escada de gravidade crescente do comportamento suicida?","Ideação de morte (passiva), ideação suicida (ativa), desejo, intenção, planejamento, tentativa e suicídio consumado."],
+["5","Gravidade","Diferencie ideação de morte de ideação suicida.","Ideação de morte (passiva): querer sumir, achar que morrer seria boa solução, sem intenção de agir.\nIdeação suicida (ativa): pensamentos dirigidos a atentar contra a vida, ainda sem desejo plenamente consciente de morrer."],
+["5","Gravidade","O que caracteriza o planejamento suicida?","Definição organizada de método, momento, local e forma de execução. Estágio de maior gravidade e letalidade antes do ato."],
+["5","Psicopatologia","Quais os três estados psicopatológicos do suicídio?","Mnemônico AIR: Ambivalência (desejo de viver e de cessar o sofrimento), Impulsividade (resposta rápida a gatilho, sem plano) e Rigidez de pensamento (suicídio visto como única solução)."],
+["5","Psicopatologia","Por que a ambivalência é importante?","É o momento crítico para intervenção: a presença de esperança reduz significativamente o risco e permite abordagem eficaz."],
+["5","Fatores","Quais os fatores de risco não modificáveis?","Idade 15 a 30 anos e idosos, perdas recentes, gênero, cônjuge de suicida, suicídio de figura proeminente ou conhecido (adolescentes), adversidades na infância, populações especiais (imigrantes, indígenas), história familiar, doenças crônicas debilitantes."],
+["5","Fatores","Quais os fatores de risco modificáveis?","Desemprego e problemas financeiros, incerteza quanto à orientação sexual, aposentadoria, alto neuroticismo e baixa resiliência, situação de rua, acesso a meios letais, viver sozinho, conflitos familiares e falta de apoio social."],
+["5","Fatores","Qual a diferença de gênero no suicídio?","Homens consomem mais (consumam); mulheres tentam mais."],
+["5","Fatores","Quando o risco é maior após desemprego?","Nos três primeiros meses da mudança de situação financeira ou do desemprego."],
+["5","Abordagem","Perguntar sobre suicídio induz o comportamento?","Não. Perguntar ativamente é essencial para a avaliação."],
+["5","Abordagem","Quais os passos da abordagem do paciente com risco?","Mnemônico PAVIS: Perguntar ativamente, Avaliar pensamento, intenção, plano e meios, Vínculo terapêutico, Investigar fatores protetores, Suporte sociofamiliar (que orienta a decisão de internar)."],
+["5","Abordagem","Quais fatores protetores investigar?","Filhos, religião, vínculos afetivos e projetos de vida."],
+["5","Risco","Quais sinais indicam risco elevado de suicídio?","Persistência da intenção, recusa ao tratamento, estado misto, desesperança, tentativas prévias, frustração por tentativa não consumada, história familiar, falta de suporte e acesso a método letal como arma de fogo."],
+["5","Risco","O que avaliar nas tentativas prévias?","Número, se planejada (mais letal) ou impulsiva, gatilhos, método e letalidade, intenção e necessidade de hospitalização clínica ou psiquiátrica."],
+["5","Diagnósticos","Qual a proporção de suicídios com transtorno mental?","Cerca de 90%, com risco aproximadamente 8 vezes maior."],
+["5","Diagnósticos","TDM ou TAB: qual mais associado ao suicídio?","TDM em números absolutos (é mais prevalente). TAB no risco proporcional (cada bipolar tem mais chance individual)."],
+["5","Diagnósticos","Quais outros transtornos se associam ao suicídio?","Ansiedade, uso de substâncias (impulsividade e desinibição), esquizofrenia (fases iniciais e sintomas ativos) e transtornos de personalidade impulsivos e instáveis."],
+["5","Conduta","Qual a conduta após uma tentativa de autoextermínio?","Acolhimento imediato e sem julgamento, manejo clínico com estabilização física e psíquica e notificação compulsória imediata no SINAN."],
+["5","Prevenção","Quais medidas populacionais de prevenção?","Restringir pesticidas e armas de fogo (pesticidas respondem por cerca de 20% dos suicídios), reduzir o tamanho das embalagens de medicamentos, parceria com redes sociais, habilidades socioemocionais em adolescentes e identificação precoce."],
+["5","Prevenção","Como deve ser a cobertura da mídia sobre suicídio?","Não detalhar métodos, evitar sensacionalismo, valorizar histórias de recuperação e tratamento e promover narrativas de esperança, para evitar o efeito contágio."],
+["5","Prevenção","Quais tratamentos reduzem diretamente a ideação suicida?","Escetamina e ECT (casos graves e resistentes) e lítio, com início de ação relativamente mais rápido que outros estabilizadores."],
+["5","Prevenção","Por que o lítio é pouco usado apesar da eficácia?","Menor divulgação, necessidade de litemia frequente (janela terapêutica estreita), risco de intoxicação, efeitos adversos e manejo complexo. Mecanismo não totalmente elucidado, eficácia conhecida há mais de 40 anos."],
+["5","Prevenção","O que é o Setembro Amarelo?","Campanha criada pelo CVV, CFM e ABP, em referência ao Dia Mundial de Prevenção do Suicídio, 10 de setembro."],
+
+// ===== AULA 6 =====
+["6","Conceitos","Quais transtornos compõem o grupo psicótico da aula?","Esquizofrenia (e esquizofreniforme), transtorno delirante, transtorno psicótico breve e transtorno esquizoafetivo."],
+["6","Conceitos","Defina psicose.","Síndrome que compromete a capacidade mental, a resposta afetiva, o reconhecimento da realidade, a comunicação e a relação interpessoal. Define os transtornos psicóticos, mas também ocorre nos transtornos do humor."],
+["6","Conceitos","Quais os cinco domínios da psicose?","Delírio, alucinação, pensamento desorganizado, comportamento desorganizado ou catatônico e sintomas negativos."],
+["6","Delírio","O delírio altera a forma ou o conteúdo do pensamento?","O conteúdo. A desorganização (afrouxamento, descarrilhamento, desagregação) é que altera a forma."],
+["6","Delírio","Diferencie delírio bizarro de não bizarro.","Bizarro: claramente implausível e incompreensível no contexto cultural.\nNão bizarro: possível, embora improvável, como ser perseguido por alguém."],
+["6","Delírio","Quais tipos de delírio a Aula 6 acrescenta?","Hipocondríaco (doença grave sem evidência), de reivindicação ou querelância (vítima de injustiça, busca reparação) e de invenção ou descoberta."],
+["6","Delírio","O que pode ocorrer no delírio de Ekbom além da crença?","Escoriações cutâneas pela tentativa de remover os «parasitas», não necessariamente com alucinações."],
+["6","Comportamento","O que caracteriza o comportamento desorganizado?","Atitudes tolas e pueris, maneirismos, agitação imprevisível e, nos graus mais graves, rigidez ou estupor."],
+["6","Catatonia","Como a catatonia da depressão difere da esquizofrenia?","Na depressão tende a ter mais negativismo e não tem flexibilidade cérea, que pode ocorrer na esquizofrenia."],
+["6","Catatonia","Quais as formas e manifestações da catatonia?","Com agitação (excitação catatônica, sem finalidade) ou com negativismo (inibida, resistente). Manifestações: ecolalia, automatismos, movimentos erráticos, posturas bizarras mantidas, mutismo e estupor."],
+["6","Negativos","O que são sintomas negativos?","Redução global de volição, afeto, pensamento e cognição, possivelmente por hiperativação de algumas áreas e hipoativação compensatória de outras. Existem também na depressão, com apresentação diferente."],
+["6","Negativos","Quais os sintomas negativos?","Expressão emocional diminuída, avolição e apatia, associabilidade, alogia, anedonia, pensamento concreto e prejuízo cognitivo."],
+["6","Negativos","Diferencie apatia, avolição e alogia.","Apatia: falta de iniciativa. Avolição: falta de vontade e energia para agir. Alogia: fala pobre em produção, fluência e conteúdo, frases simples."],
+["6","Negativos","O que caracteriza a anedonia e a associabilidade na esquizofrenia?","Anedonia: menor capacidade de sentir prazer e de recordar experiências prazerosas.\nAssociabilidade: pouco interesse social, ligado à avolição e à perda de oportunidades e autonomia."],
+["6","Esquizofrenia","Qual o critério A da esquizofrenia?","2 ou mais dos 5 domínios por pelo menos 1 mês (ou menos se tratado com sucesso), com pelo menos 1 nuclear: delírio, alucinação ou pensamento desorganizado."],
+["6","Esquizofrenia","Qual o critério B da esquizofrenia?","Queda acentuada do funcionamento (trabalho, relações, autocuidado) em relação ao próprio nível prévio. O paciente não retorna ao nível anterior mesmo com melhora dos positivos, pelo peso dos sintomas negativos."],
+["6","Esquizofrenia","Qual o critério C da esquizofrenia?","Sinais contínuos por pelo menos 6 meses, incluindo fases ativas e residuais (geralmente negativas)."],
+["6","Esquizofrenia","Qual a régua do tempo nas psicoses?","Breve: menos de 1 mês com remissão completa. Esquizofreniforme: de 1 a menos de 6 meses. Esquizofrenia: 6 meses ou mais."],
+["6","Esquizofrenia","Qual a principal causa de morte na esquizofrenia e seus fatores?","Doença cardiovascular prematura. Fatores: tabagismo, sedentarismo (apatia), dieta inadequada, sobrecarga familiar e antipsicóticos de segunda geração (síndrome metabólica)."],
+["6","Esquizofrenia","Quais os números de suicídio na esquizofrenia?","25% a 50% fazem tentativa na vida e cerca de 10% consumam."],
+["6","Esquizofrenia","Quais os tipos de personalidade pré-mórbida e seu significado?","Esquizoide: pior prognóstico, negativos. Esquizotípica: maior risco de evoluir para esquizofrenia. Sensitiva: formas paranoides. Bem adaptado: melhor prognóstico."],
+["6","Prognóstico","Quais os principais fatores prognósticos da esquizofrenia?","DUP (tempo de psicose não tratada), idade do primeiro surto, personalidade pré-mórbida e condução dos 5 primeiros anos."],
+["6","Prognóstico","Por que a DUP piora o prognóstico?","Pelo possível efeito neurotóxico da psicose prolongada: quanto mais tempo sem tratamento, pior."],
+["6","Prognóstico","Como a idade de início influencia o prognóstico?","Início precoce piora; início tardio melhora, porque o cérebro teve mais tempo para amadurecer sinapses e conexões."],
+["6","Prognóstico","Por que os primeiros 5 anos são decisivos?","Definem a evolução a longo prazo; exigem tratamento farmacológico adequado e intervenções como reabilitação psicossocial, socialização, abordagem comportamental e participação familiar."],
+["6","Delirante","Quais os critérios do transtorno delirante?","Delírio (bizarro ou não) por pelo menos 1 mês; critério A da esquizofrenia nunca atendido; alucinações, se houver, discretas e congruentes com o delírio."],
+["6","Delirante","Prevalência e tipo mais comum do transtorno delirante?","Cerca de 0,2%; o persecutório é o mais comum. Diagnóstico relativamente estável, mas parte evolui para esquizofrenia."],
+["6","Delirante","Como é a funcionalidade no transtorno delirante?","Preservada fora do tema do delírio, com comportamento não bizarro. Ex.: evita o mercado quando acha que a vizinha estará lá, mas cozinha e se cuida normalmente. Na esquizofrenia a queda é global."],
+["6","Esquizoafetivo","Qual o critério fundamental do esquizoafetivo?","Pelo menos 2 semanas de sintomas exclusivamente psicóticos (delírios ou alucinações), sem alteração do humor, além de episódio de humor simultâneo ao critério A da esquizofrenia."],
+["6","Esquizoafetivo","Como diferenciar esquizoafetivo de transtorno do humor com psicose?","No humor com psicose, a psicose só ocorre dentro do episódio de humor. No esquizoafetivo há fase psicótica isolada de 2 semanas ou mais. O diagnóstico é longitudinal."],
+["6","Esquizoafetivo","Quais os subtipos do esquizoafetivo?","Bipolar (há episódios maníacos, com ou sem depressão) e depressivo (só episódios depressivos)."],
+["6","Dopamina","Em que se baseia a hipótese dopaminérgica?","Anfetaminas e cocaína induzem ou pioram sintomas positivos, e fármacos que reduzem a dopamina os melhoram. Vale para os transtornos psicóticos em geral."],
+["6","Dopamina","Via mesolímbica: função, alteração e efeito do bloqueio D2.","Motivação, emoção e recompensa. Hiperativa na psicose (sintomas positivos). O bloqueio D2 reduz os positivos."],
+["6","Dopamina","Via mesocortical: função, alteração e efeito do bloqueio D2.","Cognição, funções executivas e afeto. Hipofunção (sintomas negativos). Bloqueio D2 em dose alta piora os negativos; em dose baixa interfere pouco."],
+["6","Dopamina","Via nigroestriatal: função e efeito do bloqueio D2.","Movimento voluntário; contém cerca de 80% da dopamina cerebral. Bloqueio D2 causa sintomas extrapiramidais (discinesia, distonia, como disfonia)."],
+["6","Dopamina","Via tuberoinfundibular: função e efeito do bloqueio D2.","A dopamina inibe a prolactina. Bloqueio D2 causa hiperprolactinemia e galactorreia."],
+["6","Dopamina","Por que os atípicos causam menos efeitos que os típicos?","Têm afinidade diferente pelos receptores, mantendo mais dopamina endógena nas áreas prejudicadas, e bloqueiam o 5-HT2A: a serotonina via 5-HT2A reduz a dopamina pré-frontal; bloqueando-o, a dopamina sobe. Menos piora de negativos, menos extrapiramidais e menos prolactina."],
+["6","Típicos","Quais os típicos de baixa potência e seus efeitos?","Clorpromazina (Amplictil) e levomepromazina (Neozine). Mais sedação, hipotensão e efeito anticolinérgico."],
+["6","Típicos","Quais os típicos de alta potência e o risco principal?","Haloperidol (Haldol), trifluoperazina (Stelazine) e zuclopentixol (Clopixol). Alta afinidade D2, maior risco extrapiramidal."],
+["6","Típicos","Quais as formas de administração do haloperidol?","Oral, intramuscular de ação imediata (agitação aguda) e intramuscular de depósito (decanoato) a cada 2 a 4 semanas. Disponível no SUS."],
+["6","Típicos","Qual a particularidade da periciazina?","Neuleptil: possível benefício em aspectos cognitivos."],
+["6","Atípicos","Risperidona: dose e particularidades.","1 a 8 mg. «O mais típico dos atípicos». A paliperidona é seu metabólito ativo."],
+["6","Atípicos","Olanzapina: dose e particularidades.","5 a 20 mg (até 30). Poucos extrapiramidais, seda (as «pinas» ajudam o sono), ganho de peso significativo."],
+["6","Atípicos","Ziprasidona: dose e particularidades.","80 a 160 mg. Pode ser menos eficaz; tomar com refeição de cerca de 500 kcal para absorver; bom perfil metabólico."],
+["6","Atípicos","Quais as indicações da quetiapina?","Esquizofrenia (400 a 800 mg), TAB em todas as fases, escolha em gestante bipolar, potencializadora na depressão unipolar, delirium e sintomas neuropsiquiátricos da demência. Pode falhar na mania grave."],
+["6","Atípicos","Explique a farmacodinâmica da quetiapina.","Baixa afinidade D2: precisa de dose alta para ser antipsicótica. Antes disso ocupa H1 (sedação, dose baixa para dormir), receptores serotoninérgicos e, levemente, a recaptação de noradrenalina (efeito antidepressivo)."],
+["6","Atípicos","Quando indicar clozapina?","Esquizofrenia refratária: falha de 2 antipsicóticos em dose moderada a alta e tempo adequado (semanas). Mecanismos múltiplos, baixa afinidade D2."],
+["6","Atípicos","Quais os efeitos da clozapina e como monitorar?","Comum: constipação. Raro e grave: neutropenia ou agranulocitose. Hemograma semanal nas 18 primeiras semanas, quinzenal nas 18 seguintes e mensal enquanto usar."],
+["6","Atípicos","Conduta no paciente refratário ou intolerante à clozapina?","ECT de manutenção, também indicada se houver sedação excessiva, efeitos anticolinérgicos relevantes ou neutropenia. A clozapina costuma ser a última opção farmacológica."],
+["6","Atípicos","Como age o aripiprazol?","Agonista parcial D2 («PIP»): produz cerca de 1/3 da ação da dopamina. Onde há excesso, rebaixa a ativação; é modulador dopaminérgico. Precisa de dose alta para competir com a dopamina endógena."],
+["6","Atípicos","Indicações e vantagem do aripiprazol.","Esquizofrenia, TAB e potencialização na depressão unipolar. Excelente perfil metabólico."],
+["6","Atípicos","Qual o efeito adverso marcante do aripiprazol?","Acatisia: inquietação e incapacidade de ficar parado. O esquizofrênico pode não verbalizar (o examinador percebe); o bipolar costuma relatar inquietação intensa."],
+["6","Atípicos","Brexpiprazol: mecanismo e indicações.","Agonista parcial D2 com importante ação serotoninérgica. Adjuvante na depressão, esquizofrenia (doses mais altas) e sintomas neuropsiquiátricos da demência."],
+["6","Efeitos","O que é discinesia tardia e como tratar?","Movimento hipercinético após mais de 1 ano de antipsicótico (geralmente muito mais), pode ser irreversível. Trocar para clozapina («descanso para o D2»)."],
+["6","Efeitos","Quais os sinais da síndrome neuroléptica maligna e a conduta?","Geralmente após uso agudo de grande quantidade de antipsicótico: hipertermia, hipertonia, flutuação da consciência, disfunção autonômica (PA, pulso, FR), rabdomiólise e leucocitose. Suporte intensivo."]
+];
+
+const AULAS = [["todas","Todas"],["1","Aulas 1 e 2"],["3","Aula 3"],["4","Aula 4"],["5","Aula 5"],["6","Aula 6"]];
+const label = a => a==="1" ? "Aulas 1 e 2" : "Aula " + a;
+let filtro = "todas", fila = [], dominados = new Set(), ok = 0, bad = 0, errados = new Set(), virado = false, atual = null;
+
+const $ = id => document.getElementById(id);
+function base(){ return C.map((c,i)=>i).filter(i => filtro==="todas" || C[i][0]===filtro); }
+function embaralhar(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function iniciar(lista){ fila = embaralhar(lista.slice()); dominados = new Set(); ok=0; bad=0; errados = new Set(); $("done").hidden = true; $("card").hidden=false; proximo(); }
+function proximo(){
+  virado=false;
+  if(!fila.length){ fim(); return; }
+  atual = fila[0];
+  const c = C[atual];
+  $("cAula").textContent = label(c[0]); $("cTema").textContent = c[1];
+  $("cQ").textContent = c[2]; $("cA").textContent = c[3]; $("cA").hidden = true;
+  $("cHint").hidden = false; $("bOk").disabled = true; $("bBad").disabled = true;
+  stats();
+}
+function virar(){ if(atual===null||!fila.length) return; virado=!virado; $("cA").hidden=!virado; $("cHint").hidden=virado; $("bOk").disabled=!virado; $("bBad").disabled=!virado; }
+function responder(acertou){
+  if(!virado) return;
+  fila.shift();
+  if(acertou){ ok++; dominados.add(atual); }
+  else { bad++; errados.add(atual); const pos = Math.min(fila.length, 3 + Math.floor(Math.random()*3)); fila.splice(pos,0,atual); }
+  proximo();
+}
+function stats(){
+  const total = base().length;
+  $("sLeft").textContent = fila.length; $("sOk").textContent = ok; $("sBad").textContent = bad;
+  $("sDone").textContent = dominados.size; $("sTotal").textContent = total;
+  $("pbar").style.width = (total ? dominados.size/total*100 : 0) + "%";
+}
+function fim(){
+  $("card").hidden = true; $("done").hidden = false;
+  $("doneText").textContent = "Você dominou " + dominados.size + " cartões. Errou " + errados.size + " cartões diferentes ao longo da rodada" + (errados.size ? "; revise só esses para fixar os pontos fracos." : ".");
+  $("redoErr").hidden = !errados.size; stats();
+}
+function renderFiltros(){
+  const box = $("filters"); box.innerHTML = "";
+  AULAS.forEach(([v,t])=>{
+    const n = v==="todas" ? C.length : C.filter(c=>c[0]===v).length;
+    const b = document.createElement("button"); b.className="chip"; b.textContent = t + " (" + n + ")";
+    b.setAttribute("aria-pressed", String(v===filtro));
+    b.onclick = ()=>{ filtro=v; renderFiltros(); iniciar(base()); renderLista(); };
+    box.appendChild(b);
+  });
+}
+function renderLista(){
+  const l = $("list"); l.innerHTML="";
+  base().forEach(i=>{ const c=C[i]; const d=document.createElement("div"); d.className="item";
+    d.innerHTML='<div class="meta"><span class="tag"></span><span></span></div><p class="q"></p><div class="a"></div>';
+    d.querySelector(".tag").textContent=label(c[0]); d.querySelector(".meta span:last-child").textContent=c[1];
+    d.querySelector(".q").textContent=c[2]; d.querySelector(".a").textContent=c[3]; l.appendChild(d); });
+}
+function modo(lista){ $("study").hidden=lista; $("listView").hidden=!lista; $("modeStudy").setAttribute("aria-pressed",String(!lista)); $("modeList").setAttribute("aria-pressed",String(lista)); }
+function toast(t){ const e=$("toast"); e.textContent=t; e.hidden=false; setTimeout(()=>e.hidden=true,3500); }
+
+$("card").addEventListener("click", virar);
+$("bOk").onclick = ()=>responder(true);
+$("bBad").onclick = ()=>responder(false);
+$("shuffle").onclick = ()=>{ embaralhar(fila); proximo(); };
+$("restart").onclick = ()=>iniciar(base());
+$("redoErr").onclick = ()=>iniciar([...errados]);
+$("redoAll").onclick = ()=>iniciar(base());
+$("modeStudy").onclick = ()=>modo(false);
+$("modeList").onclick = ()=>modo(true);
+$("copy").onclick = ()=>{
+  const tsv = base().map(i=>{const c=C[i]; return [c[2], c[3].replace(/\n/g,"<br>"), label(c[0]).replace(/ /g,"_")].join("\t");}).join("\n");
+  navigator.clipboard.writeText(tsv).then(()=>toast("Copiado. No Anki, cole num arquivo .txt e importe com separador de tabulação.")).catch(()=>toast("Seu navegador bloqueou a cópia. Use o modo lista para revisar."));
+};
+document.addEventListener("keydown", e=>{
+  if(!$("listView").hidden) return;
+  if(e.code==="Space"){ e.preventDefault(); virar(); }
+  else if(e.key==="1") responder(false);
+  else if(e.key==="2") responder(true);
+});
+renderFiltros(); renderLista(); iniciar(base());
+</script>
